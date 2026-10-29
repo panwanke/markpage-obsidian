@@ -41,7 +41,7 @@ async function sourceInfo() {
   return { sha: git(plugin, ['rev-parse', 'HEAD']), dirty: !!git(plugin, ['status', '--porcelain']) }
 }
 
-async function scratchRoot(lock) {
+async function engineCache(lock) {
   const cache = join(plugin, '.markpage')
   const root = join(cache, 'engine')
   await mkdir(cache, { recursive: true })
@@ -57,6 +57,11 @@ async function scratchRoot(lock) {
     throw new Error('Engine checkout is not an owned disposable build context')
   }
   if (git(root, ['remote', 'get-url', 'origin']) !== lock.repository) throw new Error('Unexpected engine cache remote')
+  return root
+}
+
+async function scratchRoot(lock) {
+  const root = await engineCache(lock)
   try { git(root, ['cat-file', '-e', `${lock.commit}^{commit}`]) }
   catch { git(root, ['fetch', 'origin', lock.commit]) }
   git(root, ['checkout', '--detach', '--force', lock.commit])
@@ -90,8 +95,7 @@ async function resolveRef(root, ref) {
   }
   const lock = validateEngine(JSON.parse(await readFile(lockPath, 'utf8')))
   // Ask Git to resolve branches/tags, then require the resolved object to be a commit.
-  const cache = join(plugin, '.markpage/engine')
-  if (!await exists(join(cache, '.git'))) await scratchRoot(lock)
+  const cache = await engineCache(lock)
   git(cache, ['fetch', '--', 'origin', ref ?? 'main'])
   return git(cache, ['rev-parse', '--verify', 'FETCH_HEAD^{commit}'])
 }

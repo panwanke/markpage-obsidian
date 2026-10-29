@@ -12,6 +12,10 @@ layers:
   trace: trace
 source:
   areas:
+    build_tools:
+      path: scripts
+      languages: [JavaScript]
+      code_style_skill: code-style
     host:
       path: src
       languages: [TypeScript]

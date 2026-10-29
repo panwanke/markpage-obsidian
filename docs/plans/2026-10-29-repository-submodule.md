@@ -1,7 +1,7 @@
 # Obsidian 独立仓库与 submodule 迁移评估
 
 Date: 2026-10-29
-Status: implementation — 用户已授权创建并上传独立仓库，按第一阶段实施。
+Status: implemented-stage-1 — 独立仓库已创建上传，同路径 submodule 集成，固定引擎构建与检查后同步入口已实现。
 Owner: project-markpage-obsidian
 Parent: project-markpage
 
