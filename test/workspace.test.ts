@@ -1,5 +1,5 @@
 import { execFileSync, spawnSync } from 'node:child_process'
-import { copyFile, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { basename, dirname, join, resolve } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -40,7 +40,8 @@ describe('shared engine synchronization', () => {
     const runner = join(root, 'fail-check.cjs')
     await writeFile(runner, 'console.error("Compatibility check failed intentionally"); process.exit(19)\n')
     const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => key.toLowerCase() !== 'npm_execpath'))
-    const result = spawnSync(process.execPath, [join(plugin, 'scripts/workspace.mjs'), 'sync'], {
+    await symlink(join(root, 'apps'), join(root, 'alias'), process.platform === 'win32' ? 'junction' : 'dir')
+    const result = spawnSync(process.execPath, [join(root, 'alias/obsidian/scripts/workspace.mjs'), 'sync'], {
       cwd: plugin, encoding: 'utf8', env: { ...env, npm_execpath: runner },
     })
     expect(result.status).not.toBe(0)
