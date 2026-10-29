@@ -9,14 +9,18 @@ V01–V62 已完成。测试步骤见 [TESTING.md](TESTING.md)。
 
 ## 快速开始
 
-在仓库根目录使用 Node 22.12 或以上的 Node 22：
+本仓库是独立的 [MarkPage Obsidian 插件](https://github.com/panwanke/markpage-obsidian)，
+由 [MarkPage 母库](https://github.com/panwanke/markpage) 在 `apps/obsidian` 以 submodule 集成。
+使用 Node 22.12 或以上的 Node 22，在本仓库根目录运行：
 
 ```powershell
-npm ci
-npm run prepare:obsidian
+npm run check          # 准备固定版本引擎，运行完整兼容检查并打包
+npm run prepare:vault  # 构建并创建隔离测试库
 ```
 
-命令构建插件，并在 `validation-results/MarkPage-Obsidian-时间/` 创建全新合成测试库。
+首次运行自动检出 engine.json 固定的母库版本到被忽略的 `.markpage/engine/`，
+使用母库 lockfile 安装工具链。共享实现不复制入本仓库。`prepare:vault` 在本仓库
+`validation-results/MarkPage-Obsidian-时间/` 创建全新合成测试库。
 终端输出可直接使用的绝对路径。不会启动 Obsidian、启用插件或改动已有知识库。
 
 1. 在 Obsidian 中选择“打开文件夹作为仓库”，选择终端输出的文件夹。
@@ -30,19 +34,23 @@ MarkPage 会等待最后的原生缓冲区真正落盘后才允许编辑。
 
 ## 构建与项目边界
 
-源码在 `apps/obsidian/src/`。这里仅拥有 FileView、Obsidian 文件/元数据/资源适配、
+本仓库源码在 `src/`（母库集成路径为 `apps/obsidian/src/`）。这里仅拥有 FileView、Obsidian 文件/元数据/资源适配、
 设置、安装及构建；共享解析、文档会话和格式算法归 `packages/core`，排版、分页、
 源码框、格式工具栏、评论和选区菜单归 `packages/editor`，方言归
 `packages/extension-obsidian`。网页和插件使用同一份实现。
 
 ```powershell
-npm run build:web           # 只构建网页
-npm run build:obsidian      # 类型检查、打包、检查安装包
-npm run build              # 两端构建
-npm run validate:all       # lint、架构、类型、测试、两端构建
+npm run build              # 本仓库：准备固定版本引擎并构建插件
+npm run check              # 本仓库：lint、架构、类型、完整回归和插件构建
+npm run engine:sync        # 本仓库：检查母库 main，通过后更新 engine.json
+npm run engine:sync -- SHA # 同步指定母库提交；失败恢复旧 pin
 ```
 
-产物位于 `apps/obsidian/dist/`：
+母库完整开发环境可直接使用 `npm ci`、`npm run build:obsidian`、
+`npm run validate:all` 和 `npm run sync:obsidian`。集成构建使用母库当前共享源码，
+独立构建使用 engine.json 固定源码；build-info.json 分别记录两个仓库的 SHA。
+
+本仓库产物位于 `dist/`（母库中为 `apps/obsidian/dist/`）：
 
 - `main.js`、`manifest.json`、`styles.css`：运行所需文件。
 - `LICENSE`、`versions.json`、`build-info.json`：许可、兼容映射、来源版本。
@@ -68,11 +76,11 @@ ZIP 不含用户笔记、`data.json`、node_modules、sourcemap 或绝对开发�
 
 ## 更新已有测试库
 
-先在 Obsidian 禁用 MarkPage，然后在仓库根运行：
+先在 Obsidian 禁用 MarkPage，然后在本仓库根运行：
 
 ```powershell
-npm run build:obsidian
-npm run install:obsidian -- --vault "D:\你的测试库绝对路径"
+npm run build
+npm run install:vault -- --vault "D:\你的测试库绝对路径"
 ```
 
 脚本会先验证路径与安装包，备份旧构建文件，再复制新的构建文件。终端会输出备份
@@ -86,7 +94,7 @@ npm run install:obsidian -- --vault "D:\你的测试库绝对路径"
 先禁用 MarkPage，再使用安装时输出的备份目录：
 
 ```powershell
-npm run install:obsidian -- --vault "D:\你的测试库绝对路径" --restore-backup "D:\你的测试库绝对路径\.markpage-install-backups\安装时间"
+npm run install:vault -- --vault "D:\你的测试库绝对路径" --restore-backup "D:\你的测试库绝对路径\.markpage-install-backups\安装时间"
 ```
 
 回退仅恢复该次安装前存在的构建文件，并移除该次新增的已知构建文件；不递归删除
@@ -95,14 +103,25 @@ npm run install:obsidian -- --vault "D:\你的测试库绝对路径" --restore-b
 
 ## CI 与分发
 
-现有 PR/main workflow 验证两端并上传 `markpage-obsidian` artifact。网页仍部署到
-原站点。插件不会自动安装进用户 Vault。
+本仓库 PR/main CI 使用固定引擎版本验证并上传插件 artifact；母库另有集成门禁，
+验证最新共享源码和已固定的插件。网页部署不依赖插件检出。插件发行仅归本仓库：
+创建与本仓库 manifest.version 完全一致的 tag 后生成 **draft GitHub Release**，
+真实宿主验收通过后由用户发布。日常脚本不会自动 commit、push、打 tag 或发布。
 
-用户自行创建与根版本完全一致的 tag 后，发行 workflow 执行完整检查，生成带独立
-资产的 **draft GitHub Release**。完成宿主验收后由用户审阅并发布。不会由开发脚本
-创建 tag、push 或发布 Release。此阶段无需 submodule 或第二个源码仓库。
+## 同步母库调整
 
-旧 `obsidian-plugin/` 是 **MarkPage Bridge 0.2.1**；它与本目录的 `markpage` 插件
+1. 在母库修改 `packages/*`，检查后提交并推送。
+2. 在母库运行 `npm run sync:obsidian`，或在独立插件运行 `npm run engine:sync`。
+   前者默认检查母库当前 HEAD；后者默认获取远端母库 main。也可传入具体 SHA。
+   命令运行 lint、架构、类型、回归及插件构建，通过才保留新 engine.json；失败回退 pin。
+3. 审阅插件的 engine.json，提交并推送插件 main。
+4. 母库提交 `apps/obsidian` 的新指针，再推送母库。
+
+这样共享代码始终只有母库一份，插件独立构建可复现。子库不反向嵌套母库 submodule。
+母库更新子模块源码用 `git submodule update --init --recursive`；需要升级到插件新版本
+时先 fetch 子库，再显式更新父指针。不要用忽略 dirty 状态的方式掩盖未提交修改。
+
+母库的旧 `obsidian-plugin/` 是 **MarkPage Bridge 0.2.1**；它与本目录的 `markpage` 插件
 具有不同 manifest id、用途和构建命令。正式插件测试不需要启用 bridge。
 
 ## 当前限制
@@ -112,5 +131,5 @@ npm run install:obsidian -- --vault "D:\你的测试库绝对路径" --restore-b
 - 不执行 Dataview、Templater 或任意第三方脚本。不自动新建缺失链接指向的笔记。
 - 方言、源码映射和扩展 API 的全部计划项尚不能仅凭本次候选包宣称完成。复杂实体或
   转义的显示文本无法证明精确映射时拒绝标注；可改用源码框选择原始文本。
-- 可用 `npm run dev` 后访问 `/apps/obsidian/preview/index.html` 检查共享 UI。
+- 在母库可用 `npm run dev` 后访问 `/apps/obsidian/preview/index.html` 检查共享 UI。
   该预览使用内存适配器，不是 Obsidian 模拟器，也不能代替宿主验收。

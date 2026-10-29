@@ -70,7 +70,7 @@ async function rightClick(element: HTMLElement) {
 
 describe('revision review and unmapped selection menus', () => {
   it('formats the screenshot selection without changing preceding entities, escapes or emoji', async () => {
-    const source = readFileSync('tests/fixtures/obsidian-vault/Start.md', 'utf8')
+    const source = readFileSync('apps/obsidian/fixtures/Start.md', 'utf8')
     const selected = '确映射的显示选区'
     const state = await mount(source)
     const paragraph = [...host.querySelectorAll<HTMLElement>('article p')].find((entry) => entry.textContent?.includes(selected))!

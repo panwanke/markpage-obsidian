@@ -2,6 +2,10 @@
 
 ## Unreleased fixes
 
+- Extract the host history into panwanke/markpage-obsidian, mounted in the parent as a submodule.
+- Pin the shared MarkPage engine by commit; provide standalone build/check entrypoints and a validation-gated engine:sync command.
+- Record plugin and engine provenance separately; move plugin release ownership to this repository.
+
 - Isolate context menu buttons from Obsidian defaults and use host theme colors for readable menu surfaces and actions.
 - Map verified literal edges of text nodes containing entities/escapes, allowing ordinary selections in the same paragraph while keeping encoded tokens outside direct mappings.
 - Allow existing changes to be accepted or rejected without enabling tracking; expose batch review actions in the compact toolbar and verify individual targets against source revision ranges.

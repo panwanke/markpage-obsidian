@@ -10,11 +10,18 @@ import { zipSync, strToU8 } from 'fflate'
 const root = fileURLToPath(new URL('../../', import.meta.url))
 const plugin = fileURLToPath(new URL('./', import.meta.url))
 const output = resolve(plugin, 'dist')
-const pkg = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'))
+const pkg = JSON.parse(await readFile(resolve(plugin, 'package.json'), 'utf8'))
+const engine = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'))
 const manifest = JSON.parse(await readFile(resolve(plugin, 'manifest.json'), 'utf8'))
-if (pkg.version !== manifest.version) throw new Error('Plugin manifest must match root product version')
-const git = (args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim()
-const info = { version: pkg.version, api: 2, sha: git(['rev-parse', 'HEAD']), dirty: !!git(['status', '--porcelain']), candidate: true,
+if (pkg.version !== manifest.version) throw new Error('Plugin manifest must match plugin package version')
+const git = (cwd, args) => execFileSync('git', args, { cwd, encoding: 'utf8' }).trim()
+const source = await readFile(resolve(plugin, '.build-source.json'), 'utf8').then(JSON.parse).catch((error) => {
+  if (error.code !== 'ENOENT') throw error
+  return { sha: git(plugin, ['rev-parse', 'HEAD']), dirty: !!git(plugin, ['status', '--porcelain']) }
+})
+const info = { version: pkg.version, api: 2, ...source, candidate: true,
+  engine: { repository: 'panwanke/markpage', sha: git(root, ['rev-parse', 'HEAD']), version: engine.version,
+    dirty: !!git(root, ['status', '--porcelain', '--untracked-files=no', '--', 'packages', 'package.json', 'package-lock.json']) },
   minAppVersion: manifest.minAppVersion, hostAcceptance: 'pending', node: process.version }
 await mkdir(output, { recursive: true })
 const result = await build({
@@ -32,7 +39,7 @@ sheet.walkRules((rule) => {
 })
 await writeFile(resolve(output, 'styles.css'), sheet.toString())
 for (const file of ['manifest.json', 'versions.json']) await copyFile(resolve(plugin, file), resolve(output, file))
-await copyFile(resolve(root, 'LICENSE'), resolve(output, 'LICENSE'))
+await copyFile(resolve(plugin, 'LICENSE'), resolve(output, 'LICENSE'))
 await writeFile(resolve(output, 'build-info.json'), JSON.stringify(info, null, 2) + '\n')
 await writeFile(resolve(output, 'dependency-report.json'), JSON.stringify(result.metafile, null, 2) + '\n')
 const archive = {}

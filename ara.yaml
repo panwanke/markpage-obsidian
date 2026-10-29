@@ -1,0 +1,47 @@
+ara_version: 1
+project:
+  name: MarkPage for Obsidian
+  domain: software
+  status: active
+project_identity:
+  slug: project-markpage-obsidian
+  aliases: [markpage-obsidian]
+  type: software-tool
+  parent_project: project-markpage
+layers:
+  trace: trace
+source:
+  areas:
+    host:
+      path: src
+      languages: [TypeScript]
+      code_style_skill: code-style
+documentation:
+  version: 1
+  root: docs
+  index: docs/README.md
+  records: docs/records
+  taxonomy:
+    ops: Maintained engine synchronization procedures in docs/ops/.
+    plans: Proposed implementation and migration plans in docs/plans/.
+    records: Immutable dated snapshots in docs/records/.
+  naming:
+    ops: VERB_OBJECT_RUNBOOK.md
+    plans: YYYY-MM-DD-topic.md
+    records: topic_YYYY-MM-DD.md
+  routes:
+    repository_submodule:
+      when: 评估或实施正式 Obsidian 插件独立仓库及父库 submodule 集成时
+      reads:
+        - docs/plans/2026-10-29-repository-submodule.md
+        - README.md
+        - TESTING.md
+workflows:
+  sync_shared_engine:
+    short: 同步母库引擎
+    when: 母库共享包或工具链更新后刷新插件固定版本并检查兼容时
+    doc: docs/ops/SYNC_SHARED_ENGINE_RUNBOOK.md
+    reads:
+      - engine.json
+      - README.md
+      - TESTING.md

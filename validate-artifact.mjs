@@ -10,9 +10,10 @@ export async function validateArtifact(directory = fileURLToPath(new URL('./dist
   const load = (name) => readFile(join(directory, name), 'utf8')
   const [manifest, info, pkg, dependencies] = await Promise.all([
     load('manifest.json').then(JSON.parse), load('build-info.json').then(JSON.parse),
-    readFile(new URL('../../package.json', import.meta.url), 'utf8').then(JSON.parse), load('dependency-report.json').then(JSON.parse),
+    readFile(new URL('./package.json', import.meta.url), 'utf8').then(JSON.parse), load('dependency-report.json').then(JSON.parse),
   ])
   if (manifest.id !== 'markpage' || manifest.version !== pkg.version || info.version !== pkg.version || info.api !== 2) throw new Error('Artifact version mismatch')
+  if (!/^[a-f0-9]{40}$/.test(info.sha) || !/^[a-f0-9]{40}$/.test(info.engine?.sha)) throw new Error('Missing plugin or engine provenance')
   const versions = JSON.parse(await load('versions.json'))
   if (versions[pkg.version] !== manifest.minAppVersion) throw new Error('Compatibility version map mismatch')
   const files = await readdir(directory)

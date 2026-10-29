@@ -1,4 +1,4 @@
-@import '../../../packages/editor/src/styles.css';
+@import '@markpage/editor/styles.css';
 @import 'katex/dist/katex.min.css';
 
 .markpage-host { padding: 0; overflow: hidden; height: 100%; }

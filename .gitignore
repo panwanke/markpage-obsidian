@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.markpage/
+validation-results/
+trace/
+AGENTS.md
+.env*
+*.log
+.build-source.json

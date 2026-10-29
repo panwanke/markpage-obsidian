@@ -3,6 +3,14 @@
   "version": "1.2.0",
   "private": true,
   "type": "module",
+  "scripts": {
+    "setup": "node scripts/workspace.mjs setup",
+    "build": "node scripts/workspace.mjs build",
+    "check": "node scripts/workspace.mjs check",
+    "prepare:vault": "node scripts/workspace.mjs prepare",
+    "install:vault": "node scripts/workspace.mjs install",
+    "engine:sync": "node scripts/workspace.mjs sync"
+  },
   "dependencies": {
     "@markpage/core": "1.2.0",
     "@markpage/editor": "1.2.0",

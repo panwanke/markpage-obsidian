@@ -9,4 +9,4 @@ read only; conflicts and deleted files retain local drafts for recovery or expor
 
 This candidate requires real Windows Obsidian acceptance testing. The manifest's
 1.8.7 minimum is a candidate SDK baseline, not a verified support claim. Review
-the testing instructions in apps/obsidian/README.md before publishing this draft.
+the testing instructions in README.md before publishing this draft.

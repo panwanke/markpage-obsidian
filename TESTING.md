@@ -81,5 +81,5 @@ MarkPage 版本 / SHA：
 控制台错误（如有）：
 ```
 
-本地自动检查可运行 `npm run validate:all`。真实宿主未测试项保留“未测试”，
+独立仓库自动检查运行 `npm run check`；母库集成检查运行 `npm run validate:all`。真实宿主未测试项保留“未测试”，
 不要把 mock 或 jsdom 的通过结果填写为宿主 PASS。
